@@ -5,7 +5,5 @@ services:
     build: ./app
     container_name: my-node-app
     restart: unless-stopped
-    env_file:
-      - .env
     volumes:
       - ./app:/app
