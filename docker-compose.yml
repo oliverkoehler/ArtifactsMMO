@@ -2,8 +2,10 @@ version: "3.9"
 
 services:
   app:
-    build: ./app
-    container_name: my-node-app
+    build: .
+    container_name: artifacts-bot
     restart: unless-stopped
     volumes:
       - ./app:/app
+    environment:
+      - TOKEN=${TOKEN}
