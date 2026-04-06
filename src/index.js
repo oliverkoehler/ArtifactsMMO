@@ -10,8 +10,6 @@ const api = ArtifactsApi.create({
     token: process.env.TOKEN
 })
 
-console.log(api)
-
 export function sleep(ms) {
     console.log("Waiting for " + ms / 1000 + " seconds.")
     return new Promise(resolve => setTimeout(resolve, ms + 1000));
