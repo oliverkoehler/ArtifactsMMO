@@ -6,7 +6,7 @@ dotenv.config({
     //path: "../.env"
 })
 
-console.log("Starting...")
+console.log("Starting....")
 const api = ArtifactsApi.create({
     token: process.env.TOKEN
 })
