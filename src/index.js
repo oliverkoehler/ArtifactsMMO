@@ -41,9 +41,10 @@ function logger(log) {
     }
 
     loggerInstance[log.level]({
+        msg: log.msg,
         worker: log.worker || "test",
         ...log.meta
-    }, log.msg);
+    });
 }
 
 logger({
