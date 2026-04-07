@@ -7,7 +7,7 @@ dotenv.config({
     //path: "../.env"
 })
 
-console.log("Starting.... V0.0.1")
+console.log("Starting.... V0.0.2")
 const api = ArtifactsApi.create({
     token: process.env.TOKEN
 })
@@ -67,7 +67,7 @@ async function dumpItems(quantity) {
     return await sleep(data.cooldown.remaining_seconds * 1000)
 }
 
-let running = false;
+let running = true;
 
 while (running) {
     try {
@@ -80,11 +80,7 @@ while (running) {
         const character = res?.data?.character;
         const cooldownSeconds = res?.data?.cooldown?.remaining_seconds ?? 0;
 
-        if (!character?.inventory) {
-            console.error("Missing character inventory in gathering response");
-            await sleep(5000);
-            continue;
-        }
+        await sleep(cooldownSeconds * 1000)
 
         const gudgeonCount = character.inventory.reduce((total, item) => {
             return item.code === config.item ? total + item.quantity : total;
@@ -92,7 +88,7 @@ while (running) {
 
         const inventoryCount = getInventoryCount(character);
 
-        if (inventoryCount.count >= 90) {
+        if (inventoryCount.count >= 30) {
             await dumpItems(gudgeonCount);
         }
 
