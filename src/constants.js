@@ -11,4 +11,5 @@ export const coords = {
     SUNFLOWERS: { x: 2, y: 2 },
     COPPER_ORE: { x: 2, y: 0 },
     GUDGEON: { x: 4, y: 2 },
+    ASH_WOOD: { x: -1, y: 0 },
 }
