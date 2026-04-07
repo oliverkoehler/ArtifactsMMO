@@ -5,7 +5,7 @@ import config from "../config.json" with { type: "json" };
 import pino from "pino";
 
 
-const transport = pino.transport({
+const lokiTransport = pino.transport({
     target: "pino-loki",
     options: {
         host: "http://loki:3100",
@@ -13,13 +13,20 @@ const transport = pino.transport({
             service: "bot"
         },
         propsToLabels: ["worker"],
-        batching: {
-            interval: 5
-        }
+        batching: true,
+        interval: 5
     }
 });
 
-const loggerInstance = pino({}, transport);
+const loggerInstance = pino(
+    {
+        base: null
+    },
+    pino.multistream([
+        { stream: process.stdout },   // 👈 Konsole
+        { stream: lokiTransport }     // 👈 Loki
+    ])
+);
 
 // dotenv.config({
 //     //path: "../.env"
