@@ -3,9 +3,9 @@ import {ArtifactsApi, ArtifactsError} from "artifacts-api-client";
 import {coords} from "./constants.js";
 import config from "../config.json" with { type: "json" };
 
-dotenv.config({
-    //path: "../.env"
-})
+// dotenv.config({
+//     //path: "../.env"
+// })
 
 console.log("Starting.... V0.0.2")
 const api = ArtifactsApi.create({
