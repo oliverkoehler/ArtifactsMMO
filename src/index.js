@@ -43,24 +43,46 @@ export async function depositToBank(name, code, quantity) {
     return getInventoryCount(res.data.character)
 }
 
-async function dumpSunflowers(quantity) {
-    await depositToBank("olli", "copper_ore", quantity)
-    const { data} = await api.myCharacters.move("olli", coords.COPPER_ORE)
+async function dumpItems(quantity) {
+    await depositToBank("olli", "gudgeon", quantity)
+    const { data} = await api.myCharacters.move("olli", coords.GUDGEON)
     return await sleep(data.cooldown.remaining_seconds * 1000)
 }
 
-while (true) {
+let running = true;
+
+while (running) {
     try {
-        const res = await api.myCharacters.gathering("olli")
-        const inventory_count = getInventoryCount(res.data.character)
-        await sleep(res.data.cooldown.remaining_seconds * 1000)
-        if (inventory_count.count >= 100) {
-            await dumpSunflowers(inventory_count.count)
+        const res = await api.myCharacters.gathering("olli");
+        const character = res?.data?.character;
+        const cooldownSeconds = res?.data?.cooldown?.remaining_seconds ?? 0;
+
+        if (!character?.inventory) {
+            console.error("Missing character inventory in gathering response");
+            await sleep(5000);
+            continue;
         }
 
-    } catch(e) {
-        if (e instanceof ArtifactsError) {
-            console.error(e.message)
+        const gudgeonCount = character.inventory.reduce((total, item) => {
+            return item.code === "gudgeon" ? total + item.quantity : total;
+        }, 0);
+
+        const inventoryCount = getInventoryCount(character);
+
+        if (inventoryCount.count >= 100) {
+            await dumpItems(gudgeonCount);
         }
+
+        if (cooldownSeconds > 0) {
+            await sleep(cooldownSeconds * 1000);
+        }
+    } catch (e) {
+        if (e instanceof ArtifactsError) {
+            console.error("ArtifactsError:", e.message);
+        } else {
+            console.error("Unexpected error:", e);
+        }
+
+        await sleep(5000);
     }
 }
