@@ -38,7 +38,7 @@ function logger(log) {
 
 logger({
     level: "info",
-    msg: "Starting bot..."
+    msg: "Starting bot... V0.0.3"
 })
 
 const api = ArtifactsApi.create({
