@@ -12,13 +12,14 @@ const transport = pino.transport({
         labels: {
             service: "bot"
         },
-        propsToLabels: ["level", "worker"], // 🔥 wichtig!
-        batching: true,
-        interval: 5
+        propsToLabels: ["worker"],
+        batching: {
+            interval: 5
+        }
     }
 });
 
-const loggerInstance = pino(transport);
+const loggerInstance = pino({}, transport);
 
 // dotenv.config({
 //     //path: "../.env"
