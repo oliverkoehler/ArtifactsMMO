@@ -7,13 +7,52 @@ import config from "../config.json" with { type: "json" };
 //     //path: "../.env"
 // })
 
-console.log("Starting.... V0.0.2")
+/**
+ * @typedef {Object} LogMessage
+ * @property {"info" | "error" | "warn" | "debug"} level
+ * @property {string} msg
+ * @property {string} [service]
+ * @property {string} [worker]
+ * @property {Object} [meta]
+ */
+
+/**
+ * @param {LogMessage} log
+ */
+function logger(log) {
+    if (!log.level || !log.msg) {
+        throw new Error("Invalid log object")
+    }
+
+    const output = {
+        timestamp: new Date().toISOString(),
+        level: log.level,
+        msg: log.msg,
+        service: log.service || "bot",
+        worker: log.worker || "test",
+        meta: log.meta || {}
+    }
+
+    process.stdout.write(JSON.stringify(output) + "\n")
+}
+
+logger({
+    level: "info",
+    msg: "Starting bot..."
+})
+
 const api = ArtifactsApi.create({
     token: process.env.TOKEN
 })
 
 export function sleep(ms) {
-    console.log("Waiting for " + ms / 1000 + " seconds.")
+    logger({
+        level: "info",
+        msg: "Waiting before next action",
+        meta: {
+            seconds: ms / 1000
+        }
+    })
     return new Promise(resolve => setTimeout(resolve, ms + 1000));
 }
 
@@ -52,7 +91,15 @@ export function getCoordsFromConfigItem() {
 export async function depositToBank(name, code, quantity) {
     const { data } = await api.myCharacters.move(name, coords.BANK)
     await sleep(data.cooldown.remaining_seconds * 1000)
-    console.log(name, code, quantity)
+    logger({
+        level: "info",
+        msg: "Depositing item to bank",
+        meta: {
+            name,
+            code,
+            quantity
+        }
+    })
     const res = await api.myCharacters.depositBankItem(name, [{
         code: code,
         quantity: quantity
@@ -97,9 +144,23 @@ while (running) {
         }
     } catch (e) {
         if (e instanceof ArtifactsError) {
-            console.error("ArtifactsError:", e.message);
+            logger({
+                level: "error",
+                msg: "ArtifactsError",
+                meta: {
+                    error: e.message,
+                    code: e.code,
+                    status: e.status
+                }
+            })
         } else {
-            console.error("Unexpected error:", e);
+            logger({
+                level: "error",
+                msg: "Unexpected error",
+                meta: {
+                    error: e.message
+                }
+            })
         }
 
         await sleep(5000);
