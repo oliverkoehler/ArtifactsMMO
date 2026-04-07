@@ -2,6 +2,23 @@
 import {ArtifactsApi, ArtifactsError} from "artifacts-api-client";
 import {coords} from "./constants.js";
 import config from "../config.json" with { type: "json" };
+import pino from "pino";
+
+
+const transport = pino.transport({
+    target: "pino-loki",
+    options: {
+        host: "http://loki:3100",
+        labels: {
+            service: "bot"
+        },
+        propsToLabels: ["level", "worker"], // 🔥 wichtig!
+        batching: true,
+        interval: 5
+    }
+});
+
+const loggerInstance = pino(transport);
 
 // dotenv.config({
 //     //path: "../.env"
@@ -11,7 +28,6 @@ import config from "../config.json" with { type: "json" };
  * @typedef {Object} LogMessage
  * @property {"info" | "error" | "warn" | "debug"} level
  * @property {string} msg
- * @property {string} [service]
  * @property {string} [worker]
  * @property {Object} [meta]
  */
@@ -21,19 +37,13 @@ import config from "../config.json" with { type: "json" };
  */
 function logger(log) {
     if (!log.level || !log.msg) {
-        throw new Error("Invalid log object")
+        throw new Error("Invalid log object");
     }
 
-    const output = {
-        timestamp: new Date().toISOString(),
-        level: log.level,
-        msg: log.msg,
-        service: log.service || "bot",
+    loggerInstance[log.level]({
         worker: log.worker || "test",
-        meta: log.meta || {}
-    }
-
-    process.stdout.write(JSON.stringify(output) + "\n")
+        ...log.meta
+    }, log.msg);
 }
 
 logger({
