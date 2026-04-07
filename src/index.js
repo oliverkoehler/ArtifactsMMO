@@ -1,12 +1,13 @@
 import dotenv from "dotenv";
 import {ArtifactsApi, ArtifactsError} from "artifacts-api-client";
 import {coords} from "./constants.js";
+import config from "../config.json" with { type: "json" };
 
 dotenv.config({
     //path: "../.env"
 })
 
-console.log("Starting....")
+console.log("Starting.... V0.0.1")
 const api = ArtifactsApi.create({
     token: process.env.TOKEN
 })
@@ -31,6 +32,23 @@ export function getInventoryCount(character) {
     }
 }
 
+export function getCoordsFromConfigItem() {
+    const itemCode = config?.item;
+
+    if (!itemCode) {
+        throw new Error("config.json enthält keinen item-Wert.");
+    }
+
+    const coordKey = itemCode.trim().replaceAll("-", "_").toUpperCase();
+    const itemCoords = coords[coordKey];
+
+    if (!itemCoords) {
+        throw new Error(`Keine Koordinaten für config.item="${itemCode}" gefunden.`);
+    }
+
+    return itemCoords;
+}
+
 export async function depositToBank(name, code, quantity) {
     const { data } = await api.myCharacters.move(name, coords.BANK)
     await sleep(data.cooldown.remaining_seconds * 1000)
@@ -44,16 +62,21 @@ export async function depositToBank(name, code, quantity) {
 }
 
 async function dumpItems(quantity) {
-    await depositToBank("olli", "gudgeon", quantity)
-    const { data} = await api.myCharacters.move("olli", coords.GUDGEON)
+    await depositToBank(config.name, config.item, quantity)
+    const { data} = await api.myCharacters.move(config.name, coords.GUDGEON)
     return await sleep(data.cooldown.remaining_seconds * 1000)
 }
 
-let running = true;
+let running = false;
 
 while (running) {
     try {
-        const res = await api.myCharacters.gathering("olli");
+        const target_coords = getCoordsFromConfigItem();
+        const char = await api.characters.get(config.name)
+        if (char.data.x !==target_coords.x || char.data.y !== target_coords.y ) {
+            await api.myCharacters.move(config.name, target_coords)
+        }
+        const res = await api.myCharacters.gathering(config.name);
         const character = res?.data?.character;
         const cooldownSeconds = res?.data?.cooldown?.remaining_seconds ?? 0;
 
@@ -64,12 +87,12 @@ while (running) {
         }
 
         const gudgeonCount = character.inventory.reduce((total, item) => {
-            return item.code === "gudgeon" ? total + item.quantity : total;
+            return item.code === config.item ? total + item.quantity : total;
         }, 0);
 
         const inventoryCount = getInventoryCount(character);
 
-        if (inventoryCount.count >= 100) {
+        if (inventoryCount.count >= 90) {
             await dumpItems(gudgeonCount);
         }
 
