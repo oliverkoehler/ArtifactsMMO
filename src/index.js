@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+// import dotenv from "dotenv";
 import {ArtifactsApi, ArtifactsError} from "artifacts-api-client";
 import {coords} from "./constants.js";
 import config from "../config.json" with { type: "json" };
@@ -88,7 +88,7 @@ while (running) {
 
         const inventoryCount = getInventoryCount(character);
 
-        if (inventoryCount.count >= 30) {
+        if (inventoryCount.count >= 90) {
             await dumpItems(gudgeonCount);
         }
 
