@@ -33,7 +33,7 @@ function logger(log) {
         meta: log.meta || {}
     }
 
-    process.stdout.write(JSON.stringify(output) + "\n")
+    console.log(output)
 }
 
 logger({
