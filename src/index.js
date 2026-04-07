@@ -40,11 +40,13 @@ function logger(log) {
         throw new Error("Invalid log object");
     }
 
-    loggerInstance[log.level]({
-        msg: log.msg,
-        worker: log.worker || "test",
-        ...log.meta
-    });
+    loggerInstance[log.level](
+        {
+            worker: log.worker || "test",
+            ...log.meta
+        },
+        log.msg
+    );
 }
 
 logger({
