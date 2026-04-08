@@ -9,14 +9,14 @@
   },
   "char-3": {
     "name": "olli-3",
-    "item": "gudgeon"
+    "item": "copper_ore"
   },
   "char-4": {
     "name": "olli-4",
-    "item": "gudgeon"
+    "item": "sunflowers"
   },
   "char-5": {
     "name": "olli-5",
-    "item": "gudgeon"
+    "item": "copper_ore"
   }
 }
