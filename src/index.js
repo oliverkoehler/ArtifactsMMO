@@ -121,10 +121,7 @@ export async function depositToBank(name, code, quantity) {
             quantity
         }
     })
-    const res = await api.myCharacters.depositBankItem(name, [{
-        code: code,
-        quantity: quantity
-    }])
+    const res = await api.myCharacters.depositBankItem(name, data.character.inventory)
     await sleep(res.data.cooldown.remaining_seconds * 1000)
     return getInventoryCount(res.data.character)
 }
