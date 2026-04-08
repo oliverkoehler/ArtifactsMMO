@@ -66,6 +66,17 @@ const api = ArtifactsApi.create({
     token: process.env.TOKEN
 })
 
+const characterKey = process.env.CHARACTER;
+const characterConfig = characterKey ? config?.[characterKey] : null;
+
+if (!characterKey) {
+    throw new Error("CHARACTER env fehlt.");
+}
+
+if (!characterConfig?.name) {
+    throw new Error(`Kein gueltiger Config-Eintrag fuer CHARACTER=\"${characterKey}\" gefunden.`);
+}
+
 export function sleep(ms) {
     logger({
         level: "info",
@@ -93,42 +104,47 @@ export function getInventoryCount(character) {
 }
 
 export function getCoordsFromConfigItem() {
-    const itemCode = config?.item;
+    const itemCode = characterConfig?.item;
 
     if (!itemCode) {
-        throw new Error("config.json enthält keinen item-Wert.");
+        throw new Error(`config.json enthaelt keinen item-Wert fuer ${characterKey}.`);
     }
 
     const coordKey = itemCode.trim().replaceAll("-", "_").toUpperCase();
     const itemCoords = coords[coordKey];
 
     if (!itemCoords) {
-        throw new Error(`Keine Koordinaten für config.item="${itemCode}" gefunden.`);
+        throw new Error(`Keine Koordinaten fuer item="${itemCode}" in ${characterKey} gefunden.`);
     }
 
     return itemCoords;
 }
 
-export async function depositToBank(name, code, quantity) {
+export async function depositToBank(name) {
     const { data } = await api.myCharacters.move(name, coords.BANK)
     await sleep(data.cooldown.remaining_seconds * 1000)
     logger({
         level: "info",
         msg: "Depositing item to bank",
         meta: {
-            name,
-            code,
-            quantity
+            name
         }
     })
-    const res = await api.myCharacters.depositBankItem(name, data.character.inventory)
+
+    const depositItems = data.character.inventory
+        .filter(item => item.quantity > 0)
+        .map(item => ({
+            code: item.code,
+            quantity: item.quantity
+        }));
+    const res = await api.myCharacters.depositBankItem(name, depositItems)
     await sleep(res.data.cooldown.remaining_seconds * 1000)
     return getInventoryCount(res.data.character)
 }
 
-async function dumpItems(quantity) {
-    await depositToBank(config.name, config.item, quantity)
-    const { data} = await api.myCharacters.move(config.name, coords.GUDGEON)
+async function dumpItems() {
+    await depositToBank(characterConfig.name)
+    const { data} = await api.myCharacters.move(characterConfig.name, coords.GUDGEON)
     return await sleep(data.cooldown.remaining_seconds * 1000)
 }
 
@@ -137,28 +153,20 @@ let running = true;
 while (running) {
     try {
         const target_coords = getCoordsFromConfigItem();
-        const char = await api.characters.get(config.name)
+        const char = await api.characters.get(characterConfig.name)
         if (char.data.x !==target_coords.x || char.data.y !== target_coords.y ) {
-            await api.myCharacters.move(config.name, target_coords)
+            await api.myCharacters.move(characterConfig.name, target_coords)
         }
-        const res = await api.myCharacters.gathering(config.name);
+        const res = await api.myCharacters.gathering(characterConfig.name);
         const character = res?.data?.character;
         const cooldownSeconds = res?.data?.cooldown?.remaining_seconds ?? 0;
 
         await sleep(cooldownSeconds * 1000)
 
-        const gudgeonCount = character.inventory.reduce((total, item) => {
-            return item.code === config.item ? total + item.quantity : total;
-        }, 0);
-
         const inventoryCount = getInventoryCount(character);
 
-        if (inventoryCount.count >= 90) {
-            await dumpItems(gudgeonCount);
-        }
-
-        if (cooldownSeconds > 0) {
-            await sleep(cooldownSeconds * 1000);
+        if (inventoryCount.count >= 98) {
+            await dumpItems();
         }
     } catch (e) {
         if (e instanceof ArtifactsError) {
