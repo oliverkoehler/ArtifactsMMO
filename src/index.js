@@ -24,7 +24,7 @@ const loggerInstance = pino(
     },
     pino.multistream([
         { stream: process.stdout },   // 👈 Konsole
-        { stream: lokiTransport }     // 👈 Loki
+        // { stream: lokiTransport }     // 👈 Loki
     ])
 );
 
@@ -144,8 +144,6 @@ export async function depositToBank(name) {
 
 async function dumpItems() {
     await depositToBank(characterConfig.name)
-    const { data} = await api.myCharacters.move(characterConfig.name, coords.GUDGEON)
-    return await sleep(data.cooldown.remaining_seconds * 1000)
 }
 
 let running = true;
@@ -157,16 +155,35 @@ while (running) {
         if (char.data.x !==target_coords.x || char.data.y !== target_coords.y ) {
             await api.myCharacters.move(characterConfig.name, target_coords)
         }
-        const res = await api.myCharacters.gathering(characterConfig.name);
-        const character = res?.data?.character;
-        const cooldownSeconds = res?.data?.cooldown?.remaining_seconds ?? 0;
 
-        await sleep(cooldownSeconds * 1000)
+        let res
 
-        const inventoryCount = getInventoryCount(character);
+        if (characterConfig?.item === "chicken") {
+            res = await api.myCharacters.fight(characterConfig.name)
+            const cooldownSeconds = res?.data?.cooldown?.remaining_seconds ?? 0;
+            await sleep(cooldownSeconds * 1000)
+            const character = res?.data?.characters[0];
 
-        if (inventoryCount.count >= 98) {
-            await dumpItems();
+            if (characterConfig?.item === "chicken" && character.hp < 40) {
+                const res = await api.myCharacters.rest(characterConfig.name)
+                await sleep(res.data.cooldown.remaining_seconds * 1000)
+            }
+
+            const inventoryCount = getInventoryCount(character);
+
+            if (inventoryCount.count >= 10) {
+                await dumpItems();
+            }
+        } else {
+            res = await api.myCharacters.gathering(characterConfig.name);
+            const cooldownSeconds = res?.data?.cooldown?.remaining_seconds ?? 0;
+            await sleep(cooldownSeconds * 1000)
+            const character = res?.data?.character;
+            const inventoryCount = getInventoryCount(character);
+
+            if (inventoryCount.count >= 98) {
+                await dumpItems();
+            }
         }
     } catch (e) {
         if (e instanceof ArtifactsError) {
