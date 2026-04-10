@@ -164,7 +164,7 @@ while (running) {
             await sleep(cooldownSeconds * 1000)
             const character = res?.data?.characters[0];
 
-            if (character.hp < 60) {
+            if (character.hp < 80) {
                 const res = await api.myCharacters.rest(characterConfig.name)
                 await sleep(res.data.cooldown.remaining_seconds * 1000)
             }
