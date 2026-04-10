@@ -1,22 +1,27 @@
 {
   "char-1": {
     "name": "olli",
-    "item": "chicken"
+    "item": "yellow-slime",
+    "monster": true
   },
   "char-2": {
     "name": "olli-2",
-    "item": "chicken"
+    "item": "yellow-slime",
+    "monster": true
   },
   "char-3": {
     "name": "olli-3",
-    "item": "chicken"
+    "item": "yellow-slime",
+    "monster": true
   },
   "char-4": {
     "name": "olli-4",
-    "item": "chicken"
+    "item": "yellow-slime",
+    "monster": true
   },
   "char-5": {
     "name": "olli-5",
-    "item": "chicken"
+    "item": "yellow-slime",
+    "monster": true
   }
 }

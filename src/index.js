@@ -85,7 +85,7 @@ export function sleep(ms) {
             seconds: ms / 1000
         }
     })
-    return new Promise(resolve => setTimeout(resolve, ms + 1000));
+    return new Promise(resolve => setTimeout(resolve, ms + 500));
 }
 
 
@@ -158,13 +158,13 @@ while (running) {
 
         let res
 
-        if (characterConfig?.item === "chicken") {
+        if (characterConfig?.monster) {
             res = await api.myCharacters.fight(characterConfig.name)
             const cooldownSeconds = res?.data?.cooldown?.remaining_seconds ?? 0;
             await sleep(cooldownSeconds * 1000)
             const character = res?.data?.characters[0];
 
-            if (characterConfig?.item === "chicken" && character.hp < 40) {
+            if (character.hp < 60) {
                 const res = await api.myCharacters.rest(characterConfig.name)
                 await sleep(res.data.cooldown.remaining_seconds * 1000)
             }

@@ -13,4 +13,5 @@ export const coords = {
     GUDGEON: { x: 4, y: 2 },
     ASH_WOOD: { x: 6, y: 1 },
     CHICKEN: { x: 0, y: 1 },
+    YELLOW_SLIME: { x: 1, y: -2 },
 }
