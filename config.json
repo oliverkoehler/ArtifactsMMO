@@ -9,14 +9,14 @@
   },
   "char-3": {
     "name": "olli-3",
-    "item": "ash_wood"
+    "item": "chicken"
   },
   "char-4": {
     "name": "olli-4",
-    "item": "sunflowers"
+    "item": "chicken"
   },
   "char-5": {
     "name": "olli-5",
-    "item": "gudgeon"
+    "item": "chicken"
   }
 }
