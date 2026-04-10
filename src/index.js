@@ -171,7 +171,7 @@ while (running) {
 
             const inventoryCount = getInventoryCount(character);
 
-            if (inventoryCount.count >= 10) {
+            if (inventoryCount.count >= 95) {
                 await dumpItems();
             }
         } else {
